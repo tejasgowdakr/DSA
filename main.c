@@ -1,78 +1,77 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <math.h>
 
 #define SIZE 20
 
-struct stack
-{
-int top;
-    float data[SIZE];
+struct stack {
+    int top;
+    char data[SIZE];
 };
 
 typedef struct stack STACK;
 
-void push(STACK *s, float item)
-{
+void push(STACK *s, char item) {
     s->data[++(s->top)] = item;
 }
 
-float pop(STACK *s)
-{
+char pop(STACK *s) {
     return s->data[(s->top)--];
 }
 
-float compute(float oper1, char symbol, float oper2)
-{
-    switch (symbol)
-    {
-        case '+':return oper1 + oper2;
-
-        case '-':return oper1 - oper2;
-
-        case '*':return oper1 * oper2;
-        case '/':return oper1 / oper2;
-        case '^':return pow(oper1, oper2);
-
-        default:
-            return 0;
+int preced(char symbol) {
+    switch (symbol) {
+        case '^': return 5;
+        case '*':
+        case '/': return 3;
+        case '+':
+        case '-': return 1;
     }
-}
-
-float eval_postfix(STACK *s, char postfix[20])
-{
-    int i;
-    char symbol;
-    float oper1, oper2, res;
-    for (i = 0; postfix[i] != '0';i++)
-    {
-        symbol = postfix[i];
-        if (isdigit(symbol))
-        {
-         push(s, symbol-'0');
-        }
-
-    else
-    {
-        oper2 = pop(s);
-        oper1 = pop(s);
-        res = compute(oper1, symbol, oper2);
-        push(s, res);
-    }
-}
-return pop(s);
-}
-int main()
-{
-    char postfix[20];
-    STACK s;
-    s.top=-1;
-    float ans;
-    printf("\n read postfix expression \n");
-    scanf("%s", postfix);
-    ans=eval_postfix(&s,postfix);
-    printf("\n the final results = %f \n",ans);
     return 0;
 }
 
+void infixtopostfix(STACK *s, char infix[]) {
+    int i = 0, j = 0;
+    char symbol;
+    char postfix[SIZE];
+
+    push(s, '#');
+
+    while ((symbol = infix[i++]) != '\0') {
+        if (isalnum(symbol)) {
+            postfix[j++] = symbol;
+        } else if (symbol == '(') {
+            push(s, symbol);
+        } else if (symbol == ')') {
+            while (s->data[s->top] != '(') {
+                postfix[j++] = pop(s);
+            }
+            pop(s); // remove '('
+        } else {
+            while (preced(s->data[s->top]) >= preced(symbol)) {
+                postfix[j++] = pop(s);
+            }
+            push(s, symbol);
+        }
+    }
+
+    while (s->data[s->top] != '#') {
+        postfix[j++] = pop(s);
+    }
+
+    postfix[j] = '\0';
+    printf("\nPostfix expression is: %s", postfix);
+}
+
+int main() {
+    char infix[20];
+    STACK s;
+    s.top = -1;
+
+    printf("\nRead infix expression: ");
+    scanf("%s", infix);
+
+    infixtopostfix(&s, infix);
+
+    return 0;
+}
