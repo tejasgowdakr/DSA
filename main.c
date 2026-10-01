@@ -1,77 +1,75 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
 
-#define SIZE 20
+#define SIZE 5
 
 struct stack {
     int top;
-    char data[SIZE];
+    int data[SIZE];
 };
 
 typedef struct stack STACK;
 
-void push(STACK *s, char item) {
-    s->data[++(s->top)] = item;
+void push(STACK *s, int item) {
+    if (s->top == SIZE - 1)
+        printf("\nStack overflow");
+    else {
+        s->top = s->top + 1;
+        s->data[s->top] = item;
+    }
 }
 
-char pop(STACK *s) {
-    return s->data[(s->top)--];
+void pop(STACK *s) {
+    if (s->top == -1)
+        printf("\nStack underflow");
+    else {
+        printf("\nElement popped is = %d", s->data[s->top]);
+        s->top = s->top - 1;
+    }
 }
 
-int preced(char symbol) {
-    switch (symbol) {
-        case '^': return 5;
-        case '*':
-        case '/': return 3;
-        case '+':
-        case '-': return 1;
+void display(STACK s) {
+    int i;
+    if (s.top == -1)
+        printf("\nStack is empty");
+    else {
+        printf("\nStack Content");
+        for (i = s.top; i >= 0; i--)
+            printf("%d\n", s.data[i]);
     }
-    return 0;
-}
-
-void infixtopostfix(STACK *s, char infix[]) {
-    int i = 0, j = 0;
-    char symbol;
-    char postfix[SIZE];
-
-    push(s, '#');
-
-    while ((symbol = infix[i++]) != '\0') {
-        if (isalnum(symbol)) {
-            postfix[j++] = symbol;
-        } else if (symbol == '(') {
-            push(s, symbol);
-        } else if (symbol == ')') {
-            while (s->data[s->top] != '(') {
-                postfix[j++] = pop(s);
-            }
-            pop(s); // remove '('
-        } else {
-            while (preced(s->data[s->top]) >= preced(symbol)) {
-                postfix[j++] = pop(s);
-            }
-            push(s, symbol);
-        }
-    }
-
-    while (s->data[s->top] != '#') {
-        postfix[j++] = pop(s);
-    }
-
-    postfix[j] = '\0';
-    printf("\nPostfix expression is: %s", postfix);
 }
 
 int main() {
-    char infix[20];
+    int ch, item;
     STACK s;
     s.top = -1;
 
-    printf("\nRead infix expression: ");
-    scanf("%s", infix);
+    for (;;) {
+        printf("\n1. Push");
+        printf("\n2. Pop");
+        printf("\n3. Display");
+        printf("\n4. Exit");
+        printf("\nRead choice: ");
+        scanf("%d", &ch);
 
-    infixtopostfix(&s, infix);
+        switch (ch) {
+            case 1:
+                printf("\nRead element to be pushed: ");
+                scanf("%d", &item);
+                push(&s, item);
+                break;
 
+            case 2:
+                pop(&s);
+                break;
+
+            case 3:
+                display(s);
+                break;
+
+            default:
+                exit(0);
+        }
+    }
     return 0;
 }
